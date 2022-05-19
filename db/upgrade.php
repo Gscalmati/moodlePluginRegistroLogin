@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @param int $oldversion Version number the plugin is being upgraded from.
  */
-function Xmldb_Local_Circuito_upgrade($oldversion) {
+function xmldb_local_circuito_upgrade($oldversion) {
     global $DB;
     $dbman = $DB->get_manager();
 

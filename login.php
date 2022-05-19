@@ -21,11 +21,14 @@
  * @copyright 2022 Giovanni <giovanni.scalmati@hospitalitaliano.org.ar>
  * @license   https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-require_once '../../config.php';
-require_once $CFG->dirroot. '/local/circuito/lib.php';
-require_once $CFG->dirroot. '/local/circuito/login_form.php';
+require_once('../../config.php');
+require_once($CFG->dirroot. '/local/circuito/lib.php');
+require_once($CFG->dirroot. '/local/circuito/login_form.php');
+
 
 $context = context_system::instance();
+
+
 $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/local/circuito/login.php'));
 $PAGE->set_pagelayout('standard');
@@ -34,27 +37,58 @@ $PAGE->set_pagelayout('standard');
 $PAGE->set_title("Inicio de Sesión e Inscripción");
 $PAGE->set_heading(get_string('logintitle', 'local_circuito'));
 
-//*** BODY DEL SITE ***//
-$loginform = new local_circuito_login_form();
+// DB
+global $DB;
+
+
+
+// *** BODY DEL SITE ***//
+
 
 echo $OUTPUT->header();
 echo local_greetings_get_greeting($USER);
 echo '<hr>';
 
+$loginform = new local_circuito_login_form();
 // Display del form -> $messageform.
 $loginform->display();
 
-echo $OUTPUT->box_end();
+// Display de Variables Query
+
+
+
 // Consulto si se llenó la data.
 
 if ($data = $loginform->get_data()) {
-    //Se supone que la DATA viene llena y sanitizada
-    $name = required_param('name', PARAM_TEXT);
 
-    $dbdata = $DB->get_data();
-    echo $dbdata;
+    // Como llamar un record desde la DB con la data ingresada en un campo
+    // Se supone que la DATA viene llena y sanitizada
+    $email = required_param('email', PARAM_TEXT);
+    // Nombre de la tabla
+    $table = "mdl_local_circuito_users";
+    // Creación de la QUERY
+    $sql = "SELECT * FROM {$table} WHERE email = " . $DB->sql_compare_text("'{$email}'");
+    $dbdata = $DB->get_record_sql($sql, null, IGNORE_MISSING);
+
+    echo html_writer::start_tag('div', array('class' => 'card'));
+    echo html_writer::start_tag('div', array('class' => 'card-body'));
+    echo html_writer::tag('p', $dbdata->id, array('class' => 'h3'));
+    echo html_writer::start_tag('p', array('class' => 'card-text'));
+    echo html_writer::tag('p', format_text($dbdata->name, FORMAT_PLAIN), array('class' => 'h2 bgc-dark'));
+    echo html_writer::tag('p', format_text($dbdata->name, PARAM_PLAIN), array('class' => 'h2 bgc-dark'));
+    // echo html_writer::tag('span', $dbdata->name, array('class' => 'h3'));
+    echo html_writer::tag('span', " ");
+    echo html_writer::tag('span', $dbdata->surname);
+    echo html_writer::tag('p', $dbdata->email);
+    echo html_writer::end_tag('p');
+    echo html_writer::end_tag('div');
+    echo html_writer::end_tag('div');
+
+} else {
+    echo '<p class="h3"> No encontrado </p>';
 }
 
 
+echo $OUTPUT->box_end();
 
 echo $OUTPUT->footer();
